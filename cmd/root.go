@@ -3,40 +3,64 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 	"os/exec"
 )
+
+var ToTest bool
+
+func init() {
+	rootCmd.PersistentFlags().BoolVarP(&ToTest, "test", "t", false, "Run tests")
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "AOC [year] [day]",
 	Short: "Runs the Advent of Code solutions for the specified year and day",
 	Long:  `Runs the Advent of Code solutions for the specified year and day`,
 	Args:  cobra.ExactArgs(2),
+	// Set flag if it is to run tests
+
 	Run: func(cmd *cobra.Command, args []string) {
 		year := args[0]
 		day := args[1]
 
-		fmt.Printf("Running the Advent of Code solutions for the year %s and day %s\n", year, day)
-
 		// Path is year/day (day starts with a zero)
 		// Example: 2023/day01
-		path := fmt.Sprintf("%s/day%02s", year, day)
+		path := fmt.Sprintf("./%s/day%02s", year, day)
 
-		// Run the main_test.go file in the specified path
-		// Example: go test -v 2023/day01/main_test.go
+		// Get File Path
+		filePath := fmt.Sprintf("%s/main.go", path)
 
-		testFilePath := fmt.Sprintf("%s/main_test.go", path)
-
-		// Check if the path exists
-		if _, err := os.Stat(testFilePath); os.IsNotExist(err) {
-			fmt.Printf("The path %s does not exist\n", testFilePath)
-			os.Exit(1)
+		// Check if filePath and testFilePath exist
+		for _, file := range []string{path, filePath} {
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				fmt.Printf("File %s does not exist\n", file)
+				os.Exit(1)
+			}
 		}
 
-		// Run the tests
-		_ = exec.Command("go", "test", "-v", testFilePath)
+		fmt.Printf("Running the Advent of Code solutions for the year %s and day %s\n", year, day)
 
+		// Run the file
+		fmt.Printf("> go run %s\n", filePath)
+		executeCommand("go", "run", filePath)
+
+		if ToTest {
+			// Run the test file
+			fmt.Printf("> go test -v %s\n", path)
+			executeCommand("go", "test", "-v", path)
+		}
 	},
+}
+
+func executeCommand(command string, args ...string) {
+	cmd := exec.Command(command, args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf("Error executing %s: %v\nOutput: %s", command, err, output)
+	}
+	fmt.Printf("%s\n", output)
 }
 
 func Execute() {
