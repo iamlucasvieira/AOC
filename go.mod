@@ -1,4 +1,4 @@
-module github.com/iamlucasvieira/AOC
+module github.com/iamlucasvieira/aoc
 
 go 1.21
 
