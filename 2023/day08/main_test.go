@@ -104,14 +104,14 @@ func TestParseData(t *testing.T) {
 		t.Errorf("parseData(%q) = %v, want %v", mockData, gotInstruction, wantInstruction)
 	}
 
-	wantMap := lrPairMap{
-		"AAA": lrPair{"BBB", "CCC"},
-		"BBB": lrPair{"DDD", "EEE"},
-		"CCC": lrPair{"ZZZ", "GGG"},
-		"DDD": lrPair{"DDD", "DDD"},
-		"EEE": lrPair{"EEE", "EEE"},
-		"GGG": lrPair{"GGG", "GGG"},
-		"ZZZ": lrPair{"ZZZ", "ZZZ"},
+	wantMap := map[string]lrPair{
+		"AAA": {"BBB", "CCC"},
+		"BBB": {"DDD", "EEE"},
+		"CCC": {"ZZZ", "GGG"},
+		"DDD": {"DDD", "DDD"},
+		"EEE": {"EEE", "EEE"},
+		"GGG": {"GGG", "GGG"},
+		"ZZZ": {"ZZZ", "ZZZ"},
 	}
 
 	for k, v := range wantMap {
