@@ -1,11 +1,9 @@
 package utils
 
-import "math"
-
-// Point is a struct that represents a point in a 2D plane.
-type Point struct {
-	X, Y int
-}
+import (
+	"fmt"
+	"math"
+)
 
 type Grid[T any] [][]T
 
@@ -36,6 +34,49 @@ func (g Grid[T]) Width() int {
 // Height is a method that returns the height of a Grid.
 func (g Grid[T]) Height() int {
 	return len(g)
+}
+
+// Element is a struct that represents an element in a Grid.
+type Element[T any] struct {
+	Value T
+	Index Point
+}
+
+// Iterator returns a channel that iterates over the Grid.
+// Elements are sent through the channel along with their coordinates.
+func (g Grid[T]) Iterator() <-chan Element[T] {
+	ch := make(chan Element[T])
+
+	go func() {
+		defer close(ch)
+		for y, row := range g {
+			for x, item := range row {
+				ch <- Element[T]{item, Point{x, y}}
+			}
+		}
+	}()
+
+	return ch
+}
+
+// Get is a method that returns the value of a point in a Grid.
+func (g Grid[T]) Get(p Point) T {
+	return g[p.Y][p.X]
+}
+
+// Set is a method that sets the value of a point in a Grid.
+func (g Grid[T]) Set(p Point, value T) {
+	g[p.Y][p.X] = value
+}
+
+// Point is a struct that represents a point in a 2D plane.
+type Point struct {
+	X, Y int
+}
+
+// String is a method that returns a string representation of a point.
+func (p Point) String() string {
+	return fmt.Sprintf("(%d, %d)", p.X, p.Y)
 }
 
 // Equal is a method that checks if a point is equal to another point.
@@ -70,27 +111,4 @@ func (p Point) Mul(p2 Point) Point {
 // Distance is a method that returns the distance between two points.
 func (p Point) Distance(p2 Point) int {
 	return int(math.Abs(float64(p.X-p2.X)) + math.Abs(float64(p.Y-p2.Y)))
-}
-
-// Element is a struct that represents an element in a Grid.
-type Element[T any] struct {
-	Value T
-	Index Point
-}
-
-// Iterator returns a channel that iterates over the Grid.
-// Elements are sent through the channel along with their coordinates.
-func (g Grid[T]) Iterator() <-chan Element[T] {
-	ch := make(chan Element[T])
-
-	go func() {
-		defer close(ch)
-		for y, row := range g {
-			for x, item := range row {
-				ch <- Element[T]{item, Point{x, y}}
-			}
-		}
-	}()
-
-	return ch
 }

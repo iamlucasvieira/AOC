@@ -173,6 +173,28 @@ func TestPoint_Distance(t *testing.T) {
 	}
 }
 
+func TestPoint_String(t *testing.T) {
+	testCases := []struct {
+		p    Point
+		want string
+	}{
+		{Point{0, 0}, "(0, 0)"},
+		{Point{1, 0}, "(1, 0)"},
+		{Point{0, 1}, "(0, 1)"},
+		{Point{1, 1}, "(1, 1)"},
+		{Point{2, 2}, "(2, 2)"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.p), func(t *testing.T) {
+			got := tc.p.String()
+			if got != tc.want {
+				t.Errorf("got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
 func TestGrid_Contains(t *testing.T) {
 	grid := Grid[int]{
 		{1, 2, 3},
@@ -286,5 +308,62 @@ func TestGrid_Iterator(t *testing.T) {
 
 	if got, want := sum, 21; got != want {
 		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
+func TestGrid_Get(t *testing.T) {
+	mockGrid := Grid[int]{
+		{1, 2, 3},
+		{4, 5, 6},
+	}
+
+	testCases := []struct {
+		p   Point
+		val int
+	}{
+		{Point{0, 0}, 1},
+		{Point{1, 0}, 2},
+		{Point{2, 0}, 3},
+		{Point{0, 1}, 4},
+		{Point{1, 1}, 5},
+		{Point{2, 1}, 6},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.p), func(t *testing.T) {
+			got := mockGrid.Get(tc.p)
+			if got != tc.val {
+				t.Errorf("got %v, want %v", got, tc.val)
+			}
+		})
+	}
+}
+
+func TestGrid_Set(t *testing.T) {
+	mockGrid := Grid[int]{
+		{1, 2, 3},
+		{4, 5, 6},
+	}
+
+	testCases := []struct {
+		p   Point
+		val int
+	}{
+		{Point{0, 0}, 10},
+		{Point{1, 0}, 20},
+		{Point{2, 0}, 30},
+		{Point{0, 1}, 40},
+		{Point{1, 1}, 50},
+		{Point{2, 1}, 60},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.p), func(t *testing.T) {
+			mockGrid.Set(tc.p, tc.val)
+			got := mockGrid.Get(tc.p)
+			if got != tc.val {
+				t.Errorf("got %v, want %v", got, tc.val)
+			}
+		})
 	}
 }
