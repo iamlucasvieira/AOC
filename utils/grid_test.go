@@ -367,3 +367,136 @@ func TestGrid_Set(t *testing.T) {
 		})
 	}
 }
+
+var mockGrid = Grid[int]{
+	{0, 0, 0, 0, 1, 1, 0, 0},
+	{0, 1, 1, 1, 1, 1, 1, 0},
+	{0, 1, 0, 0, 0, 0, 1, 0},
+	{0, 1, 0, 1, 1, 0, 1, 0},
+	{0, 1, 1, 1, 1, 1, 1, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0},
+}
+
+var mockPolygon = []Point{
+	{1, 1},
+	{1, 2},
+	{1, 3},
+	{1, 4},
+	{2, 4},
+	{3, 4},
+	{3, 3},
+	{4, 3},
+	{4, 4},
+	{5, 4},
+	{6, 4},
+	{6, 3},
+	{6, 2},
+	{6, 1},
+	{5, 1},
+	{5, 0},
+	{4, 0},
+	{4, 1},
+	{3, 1},
+	{2, 1},
+	{1, 1},
+}
+
+func TestInsidePolygon(t *testing.T) {
+
+	testCases := []struct {
+		p    Point
+		want bool
+	}{
+		{Point{0, 0}, false},
+		{Point{1, 0}, false},
+		{Point{2, 0}, false},
+		{Point{3, 0}, false},
+		{Point{4, 0}, false},
+		{Point{5, 0}, false},
+		{Point{6, 0}, false},
+		{Point{7, 0}, false},
+		{Point{0, 1}, false},
+		{Point{1, 1}, false},
+		{Point{2, 1}, false},
+		{Point{3, 1}, false},
+		{Point{4, 1}, false},
+		{Point{5, 1}, false},
+		{Point{6, 1}, false},
+		{Point{7, 1}, false},
+		{Point{0, 2}, false},
+		{Point{1, 2}, false},
+		{Point{2, 2}, true},
+		{Point{3, 2}, true},
+		{Point{4, 2}, true},
+		{Point{5, 2}, true},
+		{Point{6, 2}, false},
+		{Point{7, 2}, false},
+		{Point{0, 3}, false},
+		{Point{1, 3}, false},
+		{Point{2, 3}, true},
+		{Point{3, 3}, false},
+		{Point{4, 3}, false},
+		{Point{5, 3}, true},
+		{Point{6, 3}, false},
+		{Point{7, 3}, false},
+		{Point{0, 4}, false},
+		{Point{1, 4}, false},
+		{Point{2, 4}, false},
+		{Point{3, 4}, false},
+		{Point{4, 4}, false},
+		{Point{5, 4}, false},
+		{Point{6, 4}, false},
+		{Point{7, 4}, false},
+		{Point{0, 5}, false},
+		{Point{1, 5}, false},
+		{Point{2, 5}, false},
+		{Point{3, 5}, false},
+		{Point{4, 5}, false},
+		{Point{5, 5}, false},
+		{Point{6, 5}, false},
+		{Point{7, 5}, false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.p), func(t *testing.T) {
+			got, err := InsidePolygon(tc.p, mockGrid, mockPolygon)
+			if err != nil {
+				t.Errorf("got error %v", err)
+			}
+			if got != tc.want {
+				t.Errorf("got %v, want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestInsidePolygonWrongPolygon(t *testing.T) {
+	// Polygon not closed
+	if _, err := InsidePolygon(Point{}, mockGrid, mockPolygon[1:]); err == nil {
+		t.Errorf("expected error, got nil")
+	}
+}
+
+func TestInsidePolygonPointOutsideGrid(t *testing.T) {
+	if _, err := InsidePolygon(Point{100, 100}, mockGrid, mockPolygon); err == nil {
+		t.Errorf("expected error, got nil")
+	}
+}
+
+func TestNewGrid(t *testing.T) {
+	g := NewGrid[int](3, 2, 0)
+
+	if got, want := g.Width(), 3; got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+
+	if got, want := g.Height(), 2; got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+
+	for e := range g.Iterator() {
+		if e.Value != 0 {
+			t.Errorf("got %v, want 0", e.Value)
+		}
+	}
+}
