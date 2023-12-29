@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/iamlucasvieira/aoc/utils"
@@ -119,50 +120,84 @@ func part1() int {
 
 func part2() {
 	fmt.Println("Part 2:")
-	// Assumption that in this input the distance formula f() forms a quadratic function§
+	var steps = 26501365
 
 	g, err := parse(utils.ReadFile("input2.txt"))
 	if err != nil {
 		panic(err)
 	}
 
+	// Assumption that the grid is square
+	if g.Width() != g.Height() {
+		panic("Grid is not square")
+	}
+
+	// Assumption that steps is equal
 	width := g.Width()
 	start := findStart(g)
 
-	E := len(possibleEnd(start, g, 3*width))
-	O := len(possibleEnd(start, g, 3*width+1))
-
-	sa := (3*width - 3) / 2
-	sb := (width - 3) / 2
-
-	p00 := len(possibleEnd(point{X: 0, Y: 0}, g, sa))
-	p0h := len(possibleEnd(point{X: 0, Y: width - 1}, g, sa))
-	ph0 := len(possibleEnd(point{X: width - 1, Y: 0}, g, sa))
-	pwh := len(possibleEnd(point{X: width - 1, Y: width - 1}, g, sa))
-
-	A := p00 + p0h + ph0 + pwh
-
-	p00b := len(possibleEnd(point{X: 0, Y: 0}, g, sb))
-	p0hb := len(possibleEnd(point{X: 0, Y: width - 1}, g, sb))
-	ph0b := len(possibleEnd(point{X: width - 1, Y: 0}, g, sb))
-	pwhb := len(possibleEnd(point{X: width - 1, Y: width - 1}, g, sb))
-
-	B := p00b + p0hb + ph0b + pwhb
-
-	p0sc := len(possibleEnd(point{X: 0, Y: start.Y}, g, width))
-	pswc := len(possibleEnd(point{X: start.X, Y: width - 1}, g, width))
-	pwsc := len(possibleEnd(point{X: width - 1, Y: start.Y}, g, width))
-	pshc := len(possibleEnd(point{X: start.X, Y: width - 1}, g, width))
-
-	T := p0sc + pswc + pwsc + pshc
-
-	F := func(x int) int {
-		return (x-1)*(x-1)*O + x*x*E + (x-1)*A + x*B + T
+	// Assumption that the start point is in the middle of the grid
+	if start.X != width/2 || start.Y != width/2 {
+		panic("Start point is not in the middle of the grid")
 	}
 
-	result := F((16733044 - start.X) / width)
+	// Assumption that the steps is equal to w * n + w/2
+	if steps%width != width/2 {
+		panic("Steps is not equal to w * n + w/2")
+	}
 
-	fmt.Printf("The number of steps to reach the vault is %d.\n", result)
+	// Half Width of the diamond formed by the repeated grid
+	var diamondWidth = steps/width - 1
+
+	// Number of even and odd grids
+	var oddGrids = int(math.Pow(float64(diamondWidth/2*2+1), 2))
+	var evenGrids = int(math.Pow(float64((diamondWidth+1)/2*2), 2))
+
+	// Number of points reached in even and odd grids
+	oddPoints := possibleEnd(start, g, width*2+1) // Just needs to be a large enough number
+	evenPoints := possibleEnd(start, g, width*2)
+
+	// Number of points reached in the corners
+	cornerTop := possibleEnd(point{X: width - 1, Y: start.Y}, g, width-1)
+	cornerRight := possibleEnd(point{X: start.X, Y: 0}, g, width-1)
+	cornerBottom := possibleEnd(point{X: 0, Y: start.Y}, g, width-1)
+	cornerLeft := possibleEnd(point{X: start.X, Y: width - 1}, g, width-1)
+
+	// Small Segments
+	segmentTopRight := possibleEnd(point{X: width - 1, Y: 0}, g, width/2-1)
+	segmentBottomRight := possibleEnd(point{X: 0, Y: 0}, g, width/2-1)
+	segmentTopLeft := possibleEnd(point{X: width - 1, Y: width - 1}, g, width/2-1)
+	segmentBottomLeft := possibleEnd(point{X: 0, Y: width - 1}, g, width/2-1)
+
+	// Large Segments
+	segmentLargeTopRight := possibleEnd(point{X: width - 1, Y: 0}, g, width*3/2-1)
+	segmentLargeBottomRight := possibleEnd(point{X: 0, Y: 0}, g, width*3/2-1)
+	segmentLargeTopLeft := possibleEnd(point{X: width - 1, Y: width - 1}, g, width*3/2-1)
+	segmentLargeBottomLeft := possibleEnd(point{X: 0, Y: width - 1}, g, width*3/2-1)
+
+	// Number of small segments
+	var smallSegments = (diamondWidth + 1)
+
+	// Number of Large Segments
+	var largeSegments = diamondWidth
+
+	// Number of points reached in the sides
+	allPoints := 0
+	allPoints += oddGrids * len(oddPoints)
+	allPoints += evenGrids * len(evenPoints)
+	allPoints += len(cornerTop)
+	allPoints += len(cornerRight)
+	allPoints += len(cornerBottom)
+	allPoints += len(cornerLeft)
+	allPoints += len(segmentTopRight) * smallSegments
+	allPoints += len(segmentBottomRight) * smallSegments
+	allPoints += len(segmentTopLeft) * smallSegments
+	allPoints += len(segmentBottomLeft) * smallSegments
+	allPoints += len(segmentLargeTopRight) * largeSegments
+	allPoints += len(segmentLargeBottomRight) * largeSegments
+	allPoints += len(segmentLargeTopLeft) * largeSegments
+	allPoints += len(segmentLargeBottomLeft) * largeSegments
+	fmt.Printf("There are %d points reached after %d steps.\n", allPoints, steps)
 
 }
 
