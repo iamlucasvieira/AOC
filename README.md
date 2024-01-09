@@ -10,3 +10,7 @@ go run . <year> <day>
 ```bash
 go test -v ./...
 ```
+
+## Other Solutions
+- [2023](https://github.com/iamlucasvieira/advent-of-code-2023)
+- [2022](https://github.com/iamlucasvieira/advent-of-code-2022)
